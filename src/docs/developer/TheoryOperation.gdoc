@@ -21,12 +21,20 @@ From the perspective of the resources plugin, the resources accessed by the appl
 h1. ResourceMeta entries.
 
 Information about mapped resources is stored internally in [ResourceMeta|api:org.grails.plugin.resource] objects. Subclasses of this type represent different types of resources which can be accessed in the MUS, such as bundles of CSS files ([CSSBundleResourceMeta|api:org.grails.plugin.resource]).
-The ResourceMeta objects are stored in an a mapping from the URI to the ResourceMeta, a singleton instance of [ResourceMetaStore|api:org.grails.plugin.resource.util].
+The ResourceMeta objects are stored in an a mapping from the URI to the ResourceMeta, an  instance of [ResourceMetaStore|api:org.grails.plugin.resource.util] which belongs to the [ResourceProcessor|api:org.grails.plugin.resource].
 
 h1. Servlet filters.
 
-The resources plugin operates on incoming requests by inserting up to three filters into the Spring servlet filter chain. The first is an instance of [ProcessingFilter|api:org.grails.plugin.resource] as a filter in the Spring servlet filter chain. It is inserted after the springSecurityFilterChain (if in use) and the sitemesh filters. It is inserted prior to the charEncodingFilter and urlMapping filters. It is mapped to intercept all requests in the MUS, as set by the 
+The resources plugin operates on incoming requests by inserting up to three filters into the Spring servlet filter chain, as described in the doWithWebDescriptor closure of the ResourcesGrailsPlugin.groovy descriptor.
+
+The first filter is an instance of [ProcessingFilter|api:org.grails.plugin.resource] with the adhoc parameter being false. It is mapped to intercept all requests in the MUS, as set by the grails.resources.uri.prefix configuration variable, whose default value is 'static'. 
+
+The second filter is also an instance of [ProcessingFilter|api:org.grails.plugin.resource], but with the adhoc parameter being true. It is only inserted if the grails.resource.adhoc.patterns variable is not empty. It is mapped to intercept all requests which may the adhoc patterns. These patterns are defined using the limited patterns that are available in web.xml filter-mapping descriptions.
+
+The third filter is an instance of [DevModeSanityFilter|api:org.grails.plugin.resource]. It is only inserted if the environment is development.
+
+All of these filters are inserted in the servlet filter chain defined in web.xml after the springSecurityFilterChain (if in use) and the sitemesh filters. They are inserted prior to the charEncodingFilter and urlMapping filters. 
 
 h1. ResourceProcessor.
 
-This is the main class which processes resources for the [ProcessingFilter|api:org.grails.plugin.resource]. 
+This is the main class which processes resources for both the [ProcessingFilter|api:org.grails.plugin.resource] and [ResourceTagLib|api:org.grails.plugin.resource]. It is a Spring bean which is instantiated in the ApplicationContext in the doWithSpring closure of the ResourcesGrailsPlugin.groovy descriptor. 
