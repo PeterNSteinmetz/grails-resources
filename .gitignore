@@ -10,3 +10,4 @@ target-eclipse/
 .settings/
 .project
 .classpath
+.DS_Store
