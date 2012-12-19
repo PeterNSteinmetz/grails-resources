@@ -44,7 +44,7 @@ class DevModeSanityFilter implements Filter {
             chain.doFilter(request, response)
 
             if (request.getAttribute('resources.need.layout')) {
-                def dispositionsLeftOver = grailsResourceProcessor.getRequestDispositionsRemaining(request)
+                def dispositionsLeftOver = DispositionUtilities.getRequestDispositionsRemaining(request)
                 if (dispositionsLeftOver) {
                     def optionals = grailsResourceProcessor.optionalDispositions
                     dispositionsLeftOver -= optionals
