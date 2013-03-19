@@ -1,10 +1,28 @@
 package org.grails.plugin.resource
 
 import grails.test.GroovyPagesTestCase
+import org.junit.Before
+
+import javax.activation.FileTypeMap
+import javax.activation.MimetypesFileTypeMap
 
 class ResourceTagLibIntegTests extends GroovyPagesTestCase {
     
     def grailsResourceProcessor
+
+    @Before
+    void setUp() {
+        super.setUp()
+
+        // adjust the mime type map used at the MockServletContext
+        // to return the correct mime type for CSS and JS files
+        // so that the bundle resource mapper will be applied to them
+        MimetypesFileTypeMap fileTypeMap = (MimetypesFileTypeMap) FileTypeMap.getDefaultFileTypeMap()
+        fileTypeMap.addMimeTypes(["text/javascript   js", "text/css   css"].join("\n"))
+
+        // reload all modules with bundling applied to them
+        grailsResourceProcessor.reloadAll()
+    }
     
     protected makeMockResource(uri) {
         [
@@ -119,4 +137,15 @@ class ResourceTagLibIntegTests extends GroovyPagesTestCase {
         assertTrue 'transitive dependency "GPRESOURCES-207_module_B" - resource for disposition A', result.contains("/static/GPRESOURCES-207/_file1.js")
     }
 
+
+    def testDuplicateIncludes() {
+        String template = '''
+            <r:require modules="GPRESOURCES-210_module_A"/>
+            <r:layoutResources disposition="duplicate_includes_check"/>
+        '''
+
+        String result = applyTemplate(template)
+
+        assertEquals 1, result.count("/static/_bundle-bundle_GPRESOURCES-210_module_A_duplicate_includes_check.js")
+    }
 }
